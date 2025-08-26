@@ -14,48 +14,94 @@ import gc
 import glob
 from timeit import Timer
 from PIL import Image
+import numpy as np
+import av 
+from huggingface_hub import hf_hub_download
 
+
+def read_video_pyav(container, indices):
+    '''
+    Decode the video with PyAV decoder.
+    Args:
+        container (`av.container.input.InputContainer`): PyAV container.
+        indices (`List[int]`): List of frame indices to decode.
+    Returns:
+        result (np.ndarray): np array of decoded frames of shape (num_frames, height, width, 3).
+    '''
+    frames = []
+    container.seek(0)
+    start_index = indices[0]
+    end_index = indices[-1]
+    for i, frame in enumerate(container.decode(video=0)):
+        if i > end_index:
+            break
+        if i >= start_index and i in indices:
+            frames.append(frame)
+    return np.stack([x.to_ndarray(format="rgb24") for x in frames])
 
 def run_llava_next(ov_model_path, model_id, height, width):
-    # Initializing model depending on model_id
+
     if model_id == "llava-hf/LLaVA-NeXT-Video-7B-hf":
         model = OVModelForVisualCausalLM.from_pretrained(ov_model_path, device="GPU")
         processor = LlavaNextVideoProcessor.from_pretrained(ov_model_path)
+        # define a chat history and use `apply_chat_template` to get correctly formatted prompt
+        # Each value in "content" has to be a list of dicts with types ("text", "image", "video") 
+        conversation = [
+            {
+
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Why is this video funny?"},
+                    {"type": "video"},
+                    ],
+            },
+        ]
+
+        prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+        video_path = hf_hub_download(repo_id="raushan-testing-hf/videos-test", filename="sample_demo_1.mp4", repo_type="dataset")
+        container = av.open(video_path)
+
+        # sample uniformly 8 frames from the video, can sample more for longer videos
+        total_frames = container.streams.video[0].frames
+        indices = np.arange(0, total_frames, total_frames / 8).astype(int)
+        clip = read_video_pyav(container, indices)
+        inputs_video = processor(text=prompt, videos=clip, padding=True, return_tensors="pt").to(model.device)
     else:  
         model = OVModelForVisualCausalLM.from_pretrained(ov_model_path, device="GPU")
         processor = LlavaNextProcessor.from_pretrained(ov_model_path)
+        # define a chat history and use `apply_chat_template` to get correctly formatted prompt
+        # Each value in "content" has to be a list of dicts with types ("text", "image", "video") 
+        conversation = [
+            {
 
-    # define a chat history and use `apply_chat_template` to get correctly formatted prompt
-    # Each value in "content" has to be a list of dicts with types ("text", "image", "video") 
-    conversation = [
-        {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Please use image to assist and summarize the following text. Make sure to mention characteristics from the image. Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. "},
+                    {"type": "image"},
+                    ],
+            },
+        ]
 
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "Please use image to assist and summarize the following text. Make sure to mention characteristics from the image. Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. "},
-                {"type": "image"},
-                ],
-        },
-    ]
+        prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
-    prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+        image = Image.open(f"images/image_{width}_{height}.jpg")
+        inputs_video = processor(text=prompt, images=image, padding=True, return_tensors="pt").to(model.device)
 
-    image = Image.open(f"images/image_{width}_{height}.jpg")
-    inputs_image = processor(text=prompt, images=image, padding=True, return_tensors="pt").to(model.device)
 
-    # Running 1 warmup and 3 iterations to track 1st and other token latencies
-    res_lambda = lambda: model.generate(**inputs_image, min_new_tokens=1, max_new_tokens=1, do_sample=False)
+    res_lambda = lambda: model.generate(**inputs_video, min_new_tokens=1, max_new_tokens=1, do_sample=False)
     first_token_latencys = Timer(res_lambda).repeat(repeat=1+3, number=1)[1:]
 
-    res_lambda = lambda: model.generate(**inputs_image, min_new_tokens=129, max_new_tokens=129, do_sample=False)
+    res_lambda = lambda: model.generate(**inputs_video, min_new_tokens=129, max_new_tokens=129, do_sample=False)
     rest_token_time = Timer(res_lambda).repeat(repeat=1+3, number=1)[1:]
+
 
     print(first_token_latencys)
     print(rest_token_time)
     first_token_latency = sum(first_token_latencys) / len(first_token_latencys)
     rest_token_latency = (sum(rest_token_time) / len(rest_token_time) - first_token_latency) / 128
 
-    output = model.generate(**inputs_image, max_new_tokens=128, do_sample=False)
+    output = model.generate(**inputs_video, max_new_tokens=128, do_sample=False)
     print(processor.decode(output[0][2:], skip_special_tokens=True))
     print(f"first_token_latency: {first_token_latency*1000} ms")
     print(f"rest_token_latency: {rest_token_latency*1000} ms")
