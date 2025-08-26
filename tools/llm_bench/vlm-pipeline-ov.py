@@ -1,14 +1,9 @@
 import logging as log
 import sys
-
-
-    # from optimum.intel.openvino import OVDiffusionPipeline
-
-#from optimum.intel.openvino import OVStableDiffusionXLPipeline
 import argparse
 import os
-from transformers import AutoProcessor
-from optimum.intel.openvino import OVWeightQuantizationConfig, OVModelForCausalLM
+from transformers import AutoProcessor, LlavaNextProcessor, LlavaNextVideoProcessor
+from optimum.intel.openvino import OVWeightQuantizationConfig, OVModelForCausalLM, OVModelForVisualCausalLM
 from pathlib import Path
 import os
 
@@ -17,10 +12,55 @@ import nncf
 import openvino as ov
 import gc
 import glob
-import venv
+from timeit import Timer
+from PIL import Image
+
+
+def run_llava_next(ov_model_path, model_id, height, width):
+    # Initializing model depending on model_id
+    if model_id == "llava-hf/LLaVA-NeXT-Video-7B-hf":
+        model = OVModelForVisualCausalLM.from_pretrained(ov_model_path, device="GPU")
+        processor = LlavaNextVideoProcessor.from_pretrained(ov_model_path)
+    else:  
+        model = OVModelForVisualCausalLM.from_pretrained(ov_model_path, device="GPU")
+        processor = LlavaNextProcessor.from_pretrained(ov_model_path)
+
+    # define a chat history and use `apply_chat_template` to get correctly formatted prompt
+    # Each value in "content" has to be a list of dicts with types ("text", "image", "video") 
+    conversation = [
+        {
+
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Please use image to assist and summarize the following text. Make sure to mention characteristics from the image. Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. "},
+                {"type": "image"},
+                ],
+        },
+    ]
+
+    prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
+
+    image = Image.open(f"images/image_{width}_{height}.jpg")
+    inputs_image = processor(text=prompt, images=image, padding=True, return_tensors="pt").to(model.device)
+
+    # Running 1 warmup and 3 iterations to track 1st and other token latencies
+    res_lambda = lambda: model.generate(**inputs_image, min_new_tokens=1, max_new_tokens=1, do_sample=False)
+    first_token_latencys = Timer(res_lambda).repeat(repeat=1+3, number=1)[1:]
+
+    res_lambda = lambda: model.generate(**inputs_image, min_new_tokens=129, max_new_tokens=129, do_sample=False)
+    rest_token_time = Timer(res_lambda).repeat(repeat=1+3, number=1)[1:]
+
+    print(first_token_latencys)
+    print(rest_token_time)
+    first_token_latency = sum(first_token_latencys) / len(first_token_latencys)
+    rest_token_latency = (sum(rest_token_time) / len(rest_token_time) - first_token_latency) / 128
+
+    output = model.generate(**inputs_image, max_new_tokens=128, do_sample=False)
+    print(processor.decode(output[0][2:], skip_special_tokens=True))
+    print(f"first_token_latency: {first_token_latency*1000} ms")
+    print(f"rest_token_latency: {rest_token_latency*1000} ms")
 
 def export_llava_next_video(ov_model_path):
-    model_id = "llava-hf/llava-next-video-7B-hf"
     MODEL_DIR = ov_model_path
 
     if not (MODEL_DIR / "FP16").exists():
@@ -85,13 +125,14 @@ def run_model_with_vlm_benchmark(input, output, ov_model_path, height, width):
 
     prompt = "Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. Think about how you've been responding to God's call and how you've been living in the light of his love."
 
-    image = f"images/image_{height}_{width}.jpg"
+    image = f"images/image_{width}_{height}.jpg"
     
     os.system(f'python ../../samples/python/visual_language_chat/benchmark_vlm.py -m {ov_model_path} -d GPU -mt {output} -i {image} -p "{prompt}"')
     
     return 0
 
 def clear_storage_space():
+    # Clears the cache and model directory
     CACHE_DIR = "C:/Users/gta/.cache/huggingface/hub"
     MODEL_DIR = "./models"
     
@@ -105,6 +146,8 @@ def clear_storage_space():
         else:
             print(f"Directory not found: {abs_path}")
 
+    # Files may be temporarily added to temp app data, clearing only the openvino files
+    # from that directory
     TEMP_DIR = os.path.join(os.environ["LOCALAPPDATA"], "Temp")
     
     pattern = os.path.join(TEMP_DIR, "**", "*.bin")
@@ -124,6 +167,7 @@ def main(args):
     threshold = 25 * (1024**3)
     if free < threshold:
         print(f"Free space on C drive is below 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        # User can clear storage space if needed.
         # clear_storage_space()
     else:
         print(f"Free space on C drive is above 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
@@ -143,7 +187,7 @@ def main(args):
         ov_model_path = "models/llava3-llama-next"
         model_id = "llava-hf/llama3-llava-next-8b-hf"
         export_model_with_optimum(ov_model_path, model_id)
-        run_model_with_vlm_benchmark(args.input, args.output, ov_model_path, args.height, args.width)
+        run_llava_next(ov_model_path, model_id, args.height, args.width)
     elif args.model=="phi3.5-vision":
         ov_model_path = "models/phi3.5-vision"
         model_id = "microsoft/Phi-3.5-vision-instruct"
@@ -156,9 +200,10 @@ def main(args):
         run_model_with_vlm_benchmark(args.input, args.output, ov_model_path, args.height, args.width)
     elif args.model=="llava-video":
         ov_model_path = "models/llava-next-video-7B-ov/INT4"
+        model_id = "llava-hf/LLaVA-NeXT-Video-7B-hf"
         if not os.path.exists(ov_model_path):
             export_llava_next_video(ov_model_path)
-        run_model_with_benchmark(args.input, args.output, ov_model_path, "100_llava")
+        run_llava_next(ov_model_path, model_id, args.height, args.width)
     else:
         raise(ValueError("Unsupported pipeline"))
 
