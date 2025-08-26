@@ -164,13 +164,13 @@ def main(args):
     log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.INFO, stream=sys.stdout)
 
     total, used, free = shutil.disk_usage("C:\\")
-    threshold = 25 * (1024**3)
+    threshold = 50 * (1024**3)
     if free < threshold:
-        print(f"Free space on C drive is below 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        print(f"Free space on C drive is below 50 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
         # User can clear storage space if needed.
         # clear_storage_space()
     else:
-        print(f"Free space on C drive is above 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        print(f"Free space on C drive is above 50 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
 
     if args.model=="gemma3":
         ov_model_path = "models/gemma-3-4b-it"

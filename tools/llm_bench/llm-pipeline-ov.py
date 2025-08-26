@@ -29,6 +29,7 @@ def run_model(input, output, ov_model_path, model_id, weight="int4", task=False)
     return 0
 
 def clear_storage_space():
+    # Clears the cache and model directory
     CACHE_DIR = "C:/Users/gta/.cache/huggingface/hub"
     MODEL_DIR = "./models"
     
@@ -42,6 +43,8 @@ def clear_storage_space():
         else:
             print(f"Directory not found: {abs_path}")
 
+    # Files may be temporarily added to temp app data, clearing only the openvino files
+    # from that directory
     TEMP_DIR = os.path.join(os.environ["LOCALAPPDATA"], "Temp")
     
     pattern = os.path.join(TEMP_DIR, "**", "*.bin")
@@ -54,17 +57,17 @@ def clear_storage_space():
             except Exception as e:
                 print(f"Error deleting {file_path}: {e}")
 
-
 def main(args):
     log.basicConfig(format='[ %(levelname)s ] %(message)s', level=log.INFO, stream=sys.stdout)
 
     total, used, free = shutil.disk_usage("C:\\")
-    threshold = 25 * (1024**3)
+    threshold = 50 * (1024**3)
     if free < threshold:
-        print(f"Free space on C drive is below 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        print(f"Free space on C drive is below 50 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        # User can clear storage space if needed.
         # clear_storage_space()
     else:
-        print(f"Free space on C drive is above 25 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
+        print(f"Free space on C drive is above 50 GB, currently at ({free / (1024**3):.2f}) GB remaining.")
 
 
     if args.model=="llama2":
