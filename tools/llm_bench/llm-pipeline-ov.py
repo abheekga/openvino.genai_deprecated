@@ -74,7 +74,7 @@ def main(args):
         ov_model_path = "models/llama-2-7b"
         model_id = "meta-llama/Llama-2-7b-chat-hf"
         run_model(args.input, args.output, ov_model_path, model_id)
-    if args.model=="llama3.2":
+    elif args.model=="llama3.2":
         ov_model_path = "models/llama-3.2-3b"
         model_id = "meta-llama/Llama-3.2-3B"
         run_model(args.input, args.output, ov_model_path, model_id)
