@@ -51,7 +51,7 @@ def run_llava_next(ov_model_path, model_id, height, width):
 
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Why is this video funny?"},
+                    {"type": "text", "text": "In great detail, describe everything you can see in this video, including color schemes, objects, background scenery, contextual hints, and any emotions it might evoke. Mention spatial arrangement and textures."},
                     {"type": "video"},
                     ],
             },
@@ -77,7 +77,7 @@ def run_llava_next(ov_model_path, model_id, height, width):
 
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Please use image to assist and summarize the following text. Make sure to mention characteristics from the image. Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. "},
+                    {"type": "text", "text": "In great detail, describe everything you can see in this image, including color schemes, objects, background scenery, contextual hints, and any emotions it might evoke. Mention spatial arrangement and textures."},
                     {"type": "image"},
                     ],
             },
@@ -151,7 +151,7 @@ def export_gemma():
     model_id = "google/gemma-3-4b-it"
     quantization_config = OVWeightQuantizationConfig(bits=4, sym=False)
 
-    model = OVModelForCausalLM.from_pretrained(model_id, device="GPU", quantization_config=quantization_config, trust_remote_code=True)
+    model = OVModelForVisualCausalLM.from_pretrained(model_id, device="GPU", quantization_config=quantization_config, trust_remote_code=True)
     model.save_pretrained("./models/gemma-3-4b-it")
 
     processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
