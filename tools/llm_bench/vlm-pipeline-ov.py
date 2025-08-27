@@ -107,7 +107,7 @@ def run_llava_next(ov_model_path, model_id, height, width):
     print(f"rest_token_latency: {rest_token_latency*1000} ms")
 
 def export_llava_next_video(ov_model_path):
-    MODEL_DIR = ov_model_path
+    MODEL_DIR = Path(ov_model_path)
 
     if not (MODEL_DIR / "FP16").exists():
         os.system(f"optimum-cli export openvino --model llava-hf/LLaVA-NeXT-Video-7B-hf --weight-format fp16 {MODEL_DIR}/FP16")
@@ -245,7 +245,7 @@ def main(args):
         export_model_with_optimum(ov_model_path, model_id)
         run_model_with_vlm_benchmark(args.input, args.output, ov_model_path, args.height, args.width)
     elif args.model=="llava-video":
-        ov_model_path = "models/llava-next-video-7B-ov/INT4"
+        ov_model_path = "models/llava-next-video-7B-ov"
         model_id = "llava-hf/LLaVA-NeXT-Video-7B-hf"
         if not os.path.exists(ov_model_path):
             export_llava_next_video(ov_model_path)
