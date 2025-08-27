@@ -249,6 +249,7 @@ def main(args):
         model_id = "llava-hf/LLaVA-NeXT-Video-7B-hf"
         if not os.path.exists(ov_model_path):
             export_llava_next_video(ov_model_path)
+        ov_model_path = "models/llava-next-video-7B-ov/INT4"
         run_llava_next(ov_model_path, model_id, args.height, args.width)
     else:
         raise(ValueError("Unsupported pipeline"))
