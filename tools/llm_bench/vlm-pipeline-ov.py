@@ -162,14 +162,14 @@ def run_model_with_benchmark(input, output, ov_model_path, prompt_in):
 
     prompt = f"prompts/{prompt_in}.jsonl"
     
-    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 2 -ic {output} -pf {prompt}")
+    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     
     return 0
 
 def run_model_with_vlm_benchmark(input, output, ov_model_path, height, width):
     print(f"Input Size: {input}, Output Size: {output}")
 
-    prompt = "Sometimes it's nice to take a minute in the pew by yourself beforehand. You have this beautiful church probably almost all to yourself. Can you feel its energy resonating through you? Can you feel the majesty of the Lord's kingdom and how you're a part of it? Take a moment to kneel and pray with your head down and hands clasped together. Think about how you've been responding to God's call and how you've been living in the light of his love."
+    prompt = "In great detail, describe everything you can see in this image, including color schemes, objects, background scenery, contextual hints, and any emotions it might evoke. Mention spatial arrangement and textures."
 
     image = f"images/image_{width}_{height}.jpg"
     

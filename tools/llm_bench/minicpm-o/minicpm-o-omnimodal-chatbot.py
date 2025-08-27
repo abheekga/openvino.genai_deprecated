@@ -266,17 +266,18 @@ sys_msg = ov_model.get_sys_prompt(ref_audio=ref_audio, mode="omni", language="en
 # sys_msg = model.get_sys_prompt(mode='omni', language='en')
 
 contents = get_video_chunk_content(video_path)
-msg = {"role": "user", "content": contents}
-msgs = [sys_msg, msg]
-
+question = "What is in the image? Please make sure to give an extensive description and go on for as long as possible."
+msg = {"role": "user", "content": [contents, question]}
+# msgs = [sys_msg, msg]
+msgs = [msg]
 
 res = ov_model.chat(
     msgs=msgs,
     tokenizer=tokenizer,
     sampling=True,
     temperature=0.5,
-    max_new_tokens=4096,
-    omni_input=True,  # please set omni_input=True when omni inference
+    max_new_tokens=128,
+    # omni_input=True,  # please set omni_input=True when omni inference
     use_tts_template=True,
     max_slice_nums=1,
     use_image_id=False,
