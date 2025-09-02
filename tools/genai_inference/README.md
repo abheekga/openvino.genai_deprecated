@@ -4,7 +4,7 @@ This example showases inference of several categories of models including large 
 
 The code given uses the openvino.genai repo to run the following two benchmarks:
  - [`benchmark.py`](../llm_bench/benchmark.py) demonstrates basic usage of the LLM pipeline.
- - [`benchmark_vlm.py`](../../samples/python/benchmark_vlm.py) shows how to benchmark a VLM in OpenVINO GenAI. The script includes functionality for warm-up iterations, generating text and calculating various performance metrics.
+ - [`benchmark_vlm.py`](../../samples/python/visual_language_chat/benchmark_vlm.py) shows how to benchmark a VLM in OpenVINO GenAI. The script includes functionality for warm-up iterations, generating text and calculating various performance metrics.
 
 ## Run benchmark:
 
