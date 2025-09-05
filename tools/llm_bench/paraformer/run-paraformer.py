@@ -7,7 +7,6 @@ r = requests.get(
 open("notebook_utils.py", "w").write(r.text)
 
 model_id = "model"
-wav_path = "distil-whisper-librispeech_long.wav"
 wav_path = "distil-whisper-librispeech-long_30s.wav"
 
 
