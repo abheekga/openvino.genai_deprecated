@@ -25,7 +25,7 @@ def run_model(input, output, ov_model_path, model_id, weight="int4", task=False)
         else:
             os.system(f"optimum-cli export openvino --trust-remote-code --model {model_id} --weight-format {weight} {ov_model_path}")
 
-    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 2 -ic {output} -pf {prompt}")
+    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     return 0
 
 def clear_storage_space():
