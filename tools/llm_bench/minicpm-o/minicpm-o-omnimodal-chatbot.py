@@ -257,7 +257,8 @@ def get_video_chunk_content(video_path, flatten=True):
     return contents
 
 
-video_path = "MiniCPM-o-2_6/ckpt/assets/Skiing.mp4"
+# video_path = "MiniCPM-o-2_6/ckpt/assets/Skiing.mp4"
+video_path = "../prompts/SampleVideo_1280x720_1mb.mp4"
 # if use voice clone prompt, please set ref_audio
 ref_audio_path = "MiniCPM-o-2_6/ckpt/assets/demo.wav"
 ref_audio, _ = librosa.load(ref_audio_path, sr=16000, mono=True)

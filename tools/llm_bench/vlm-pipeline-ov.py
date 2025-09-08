@@ -59,7 +59,8 @@ def run_llava_next(ov_model_path, model_id, height, width):
 
         prompt = processor.apply_chat_template(conversation, add_generation_prompt=True)
 
-        video_path = hf_hub_download(repo_id="raushan-testing-hf/videos-test", filename="sample_demo_1.mp4", repo_type="dataset")
+        # video_path = hf_hub_download(repo_id="raushan-testing-hf/videos-test", filename="sample_demo_1.mp4", repo_type="dataset")
+        video_path = Path("prompts/SampleVideo_1280x720_1mb.mp4")
         container = av.open(video_path)
 
         # sample uniformly 8 frames from the video, can sample more for longer videos
