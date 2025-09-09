@@ -93,7 +93,7 @@ def main(args):
     elif args.model=="qwen3-0.6":
         ov_model_path = "models/Qwen3-0.6B"
         model_id = "Qwen/Qwen3-0.6B"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, weight="fp16")
     elif args.model=="qwen3-8":
         ov_model_path = "models/Qwen3-8B"
         model_id = "Qwen/Qwen3-8B"
