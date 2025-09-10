@@ -20,6 +20,7 @@ python run_genai_inference.py [OPTIONS]
 - `--output` (default: `128`): Output token count, maximum tokens generated will not exceed this number.
 - `--height` (default: `512`): Image resolution height. For visual language models only.
 - `--width` (default: `512`): Image resolution width. For visual language models only.
+- `--config` (default: `False`): Loading PA backend with updated openvino.genai. Temporarily supported for visual language models.
 
 ### Output:
 
