@@ -52,7 +52,7 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
             
             print("Installing the requirements from the llm_bench")
             cwd = os.getcwd()
-            requirements_file = os.path.join(cwd, "openvino_requirements.txt")
+            requirements_file = os.path.join(cwd, "requirements.txt")
             if llava_video:
                 requirements_file = os.path.join(cwd, "llava_video_requirements.txt")
 
@@ -63,6 +63,7 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
 
             os.system(f"\"{python_exe}\" -m pip install --upgrade pip")
             os.system(f"\"{pip_exe}\" install -r {requirements_file}")
+            os.system(f"\"{pip_exe}\" install av")
             print("Requirements were installed.")
         
         print("Inside the repo and entered llm_bench, ready for inference")
