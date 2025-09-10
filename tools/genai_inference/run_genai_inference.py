@@ -14,6 +14,7 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
     pip_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "pip.exe")
     python_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "python.exe")
 
+    setup_requirements = False
     # If user not in venv, creates the venv and activates
     if sys.prefix == sys.base_prefix:
         print("Not in a venv, so will create and activate.")
@@ -26,12 +27,14 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
         # Creating the venv if it does not exist
         if not os.path.exists(VENV_DIR):
             venv.create(VENV_DIR, with_pip=True)
+            setup_requirements = True
 
 
         pip_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "pip.exe")
         python_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "python.exe")
 
-        os.execv(python_exe, [python_exe] + sys.argv)
+
+        
     
     print("Activated venv")
     print(pip_exe)
@@ -50,6 +53,7 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
             os.chdir("tools")
             os.chdir("llm_bench")
             
+        if setup_requirements:
             print("Installing the requirements from the llm_bench")
             cwd = os.getcwd()
             requirements_file = os.path.join(cwd, "requirements.txt")
@@ -82,6 +86,7 @@ def initialize_repo_and_env(llava_video=False, new_vlm=False):
         os.chdir("tools")
         os.chdir("llm_bench")
         
+    if setup_requirements:
         print("Installing the requirements from the llm_bench")
         cwd = os.getcwd()
         requirements_file = os.path.join(cwd, "openvino_requirements.txt")
@@ -107,7 +112,7 @@ def initialize_repo_and_env_minicpm_o():
     VENV_DIR = "minicpm-o-env"
     pip_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "pip.exe")
     python_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "python.exe")
-
+    setup_requirements = False
     # If user not in venv, creates the venv and activates
     if sys.prefix == sys.base_prefix:
         print("Not in a venv, so will create and activate.")
@@ -116,12 +121,13 @@ def initialize_repo_and_env_minicpm_o():
         # Creating the venv if it does not exist
         if not os.path.exists(VENV_DIR):
             venv.create(VENV_DIR, with_pip=True)
+            setup_requirements = True
 
 
         pip_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "pip.exe")
         python_exe = os.path.join(os.getcwd(), VENV_DIR, "Scripts", "python.exe")
 
-        os.execv(python_exe, [python_exe] + sys.argv)
+        
     
     print("Activated venv")
     print(pip_exe)
@@ -142,7 +148,8 @@ def initialize_repo_and_env_minicpm_o():
         os.chdir("tools")
         os.chdir("llm_bench")
         os.chdir("minicpm-o")
-        
+    
+    if setup_requirements:
         print("Installing the requirements from the minicpm-o")
         cwd = os.getcwd()
         requirements_file = os.path.join(cwd, "requirements.txt")
