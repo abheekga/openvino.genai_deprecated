@@ -210,6 +210,6 @@ if __name__ == '__main__':
     parser.add_argument("--output", default=128)
     parser.add_argument("--height", default=512)
     parser.add_argument("--width", default=512)
-    parser.add_argument("--config", default=False)
+    parser.add_argument("--config", default=False, action="store_true")
     args=parser.parse_args()
     main(args)
