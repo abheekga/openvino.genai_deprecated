@@ -9,11 +9,7 @@ import time
 output_dir = "models/whisper-large-v3"
 
 if not os.path.exists(output_dir):
-    model = OVModelForSpeechSeq2Seq.from_pretrained("openai/whisper-large-v3", export=True, trust_remote_code=True)
-    model.save_pretrained(output_dir)
-
-    tokenizer = AutoTokenizer.from_pretrained("openai/whisper-large-v3")
-    export_tokenizer(tokenizer, output_dir)
+    os.system("optimum-cli export openvino --trust-remote-code --model openai/whisper-large-v3 models/whisper-large-v3")
 
 
 def read_wav(filepath):
