@@ -197,11 +197,17 @@ def main(args):
 
         # Depending on the category of user request, runs the proper command
         if args.category == "llm":
-            ret = os.system(f"{python_exe} llm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output}")
+            if args.mem:
+                ret = os.system(f"{python_exe} llm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output} --mem")
+            else:
+                ret = os.system(f"{python_exe} llm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output}")
             if ret != 0:
                 sys.exit(ret)
         elif args.category == "vlm":
-            ret = os.system(f"{python_exe} vlm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output} --height {args.height} --width {args.width}")
+            if args.mem:
+                ret = os.system(f"{python_exe} vlm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output} --height {args.height} --width {args.width} --mem")
+            else:
+                ret = os.system(f"{python_exe} vlm-pipeline-ov.py -m {args.model} --input {args.input} --output {args.output} --height {args.height} --width {args.width}")
             if ret != 0:
                 sys.exit(ret)
 
@@ -219,5 +225,6 @@ if __name__ == '__main__':
     parser.add_argument("--height", default=512)
     parser.add_argument("--width", default=512)
     parser.add_argument("--config", default=False, action="store_true")
+    parser.add_argument("--mem", default=False, action="store_true")
     args=parser.parse_args()
     main(args)

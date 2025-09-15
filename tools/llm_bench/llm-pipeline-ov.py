@@ -11,7 +11,7 @@ import shutil
 import glob
 
 
-def run_model(input, output, ov_model_path, model_id, weight="int4", task=False):
+def run_model(input, output, ov_model_path, model_id, weight="int4", task=False, mem=False):
     
     print(f"Input Size: {input}, Output Size: {output}")
 
@@ -25,7 +25,10 @@ def run_model(input, output, ov_model_path, model_id, weight="int4", task=False)
         else:
             os.system(f"optimum-cli export openvino --trust-remote-code --model {model_id} --weight-format {weight} {ov_model_path}")
 
-    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
+    if mem:
+        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt} -mc 2")
+    else:
+        os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     return 0
 
 def clear_storage_space():
@@ -73,59 +76,59 @@ def main(args):
     if args.model=="llama2":
         ov_model_path = "models/llama-2-7b"
         model_id = "meta-llama/Llama-2-7b-chat-hf"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="llama3.2":
         ov_model_path = "models/llama-3.2-3b"
         model_id = "meta-llama/Llama-3.2-3B"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="llama3.1":
         ov_model_path = "models/llama-3.1-8b"
         model_id = "meta-llama/Llama-3.1-8B"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="glm":
         ov_model_path = "models/glm-edge-4b"
         model_id = "zai-org/glm-edge-4b-chat"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="qwen2.5":
         ov_model_path = "models/Qwen2.5-7B-Instruct"
         model_id = "Qwen/Qwen2.5-7B-Instruct"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="qwen3-0.6":
         ov_model_path = "models/Qwen3-0.6B"
         model_id = "Qwen/Qwen3-0.6B"
-        run_model(args.input, args.output, ov_model_path, model_id, weight="fp16")
+        run_model(args.input, args.output, ov_model_path, model_id, weight="fp16", mem=args.mem)
     elif args.model=="qwen3-8":
         ov_model_path = "models/Qwen3-8B"
         model_id = "Qwen/Qwen3-8B"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="phi-3.5":
         ov_model_path = "models/Phi-3.5-mini-instruct"
         model_id = "microsoft/Phi-3.5-mini-instruct"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="phi4-reason":
         ov_model_path = "models/Phi-4-mini-reasoning"
         model_id = "microsoft/Phi-4-mini-reasoning"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="phi4-instruct":
         ov_model_path = "models/Phi-4-mini-instruct"
         model_id = "microsoft/Phi-4-mini-instruct"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="gemma1":
         ov_model_path = "models/gemma1-7b"
         model_id = "google/gemma-7b"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     elif args.model=="mistral":
         ov_model_path = "models/Mistral-7B-Instruct"
         model_id = "mistralai/Mistral-7B-Instruct-v0.3"
-        run_model(args.input, args.output, ov_model_path, model_id, task=True)
+        run_model(args.input, args.output, ov_model_path, model_id, task=True, mem=args.mem)
     elif args.model=="minicpm":
         ov_model_path = "models/Minicpm-1b-sft-bf16"
         model_id = "openbmb/MiniCPM-1B-sft-bf16"
-        run_model(args.input, args.output, ov_model_path, model_id, weight="fp16")
+        run_model(args.input, args.output, ov_model_path, model_id, weight="fp16", mem=args.mem)
     elif args.model=="deepseek":
         ov_model_path = "models/Deepseek-R1-Distill-Qwen-14B"
         model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
-        run_model(args.input, args.output, ov_model_path, model_id)
+        run_model(args.input, args.output, ov_model_path, model_id, mem=args.mem)
     else:
         raise(ValueError("Unsupported pipeline"))
 
@@ -137,5 +140,6 @@ if __name__ == '__main__':
     parser.add_argument("--model", "-m", required=True)
     parser.add_argument("--input", default=1024)
     parser.add_argument("--output", default=128)
+    parser.add_argument("--mem", default=False, action="store_true")
     args=parser.parse_args()
     main(args)

@@ -158,12 +158,15 @@ def export_gemma():
     processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
     processor.save_pretrained("./models/gemma-3-4b-it")
 
-def run_model_with_benchmark(input, output, ov_model_path, prompt_in):
+def run_model_with_benchmark(input, output, ov_model_path, prompt_in, mem=False):
     print(f"Input Size: {input}, Output Size: {output}")
 
     prompt = f"prompts/{prompt_in}.jsonl"
     
-    os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
+    if mem:
+        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt} -mc 2")
+    else:
+        os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     
     return 0
 
@@ -224,7 +227,7 @@ def main(args):
         model_id = "google/gemma-3-4b-it"
         if not os.path.exists(ov_model_path):
             export_gemma()
-        run_model_with_benchmark(args.input, args.output, ov_model_path, "100")
+        run_model_with_benchmark(args.input, args.output, ov_model_path, "100", mem=args.mem)
     elif args.model=="minicpm-v":
         ov_model_path = "models/MiniCPM-V-2_6"
         model_id = "openbmb/MiniCPM-V-2_6"
@@ -265,5 +268,6 @@ if __name__ == '__main__':
     parser.add_argument("--output", default=128)
     parser.add_argument("--height", default=512)
     parser.add_argument("--width", default=512)
+    parser.add_argument("--mem", default=False, action="store_true")
     args=parser.parse_args()
     main(args)
