@@ -26,7 +26,7 @@ def run_model(input, output, ov_model_path, model_id, weight="int4", task=False,
             os.system(f"optimum-cli export openvino --trust-remote-code --model {model_id} --weight-format {weight} {ov_model_path}")
 
     if mem:
-        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt} -mc 2")
+        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     else:
         os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     return 0

@@ -164,7 +164,7 @@ def run_model_with_benchmark(input, output, ov_model_path, prompt_in, mem=False)
     prompt = f"prompts/{prompt_in}.jsonl"
     
     if mem:
-        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt} -mc 2")
+        os.system(f"python benchmark_mem.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     else:
         os.system(f"python benchmark.py -m {ov_model_path} -d GPU -n 3 -ic {output} -pf {prompt}")
     
